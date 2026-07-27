@@ -66,7 +66,7 @@ int is_builtin_cmd(const char *cmd) {
 
 
 // Function to add a command to the history
-void add_executables_from_dir(const char *dir, const char *prefix, int prefix_len) {
+void add_executables_from_dir(const char *dir, const char *prefix, int prefix_len, int include_dir_prefix) {
   DIR *dirp = opendir(dir);
   if (dirp == NULL) return;
 
@@ -83,6 +83,9 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
     }
 
     char full[MAX_PATH_LEN];
+    if (!include_dir_prefix) {
+      snprintf(full, sizeof(full), "%s", entry->d_name);
+    }
     if (strcmp(dir, ".") == 0) {
       snprintf(full, sizeof(full), "%s", entry->d_name);
     } else {
@@ -164,7 +167,7 @@ void build_completion_list(const char *text) {
   }
 
   // Add file completions from current directory
-  add_executables_from_dir(directory, prefix, strlen(prefix));
+  add_executables_from_dir(directory, prefix, strlen(prefix), 1);
 
   for (int i = 0; i < completion_count; i++) {
     if (strcmp(completion_list[i], text) == 0) {
@@ -178,7 +181,7 @@ void build_completion_list(const char *text) {
     if (path_copy != NULL) {
       char *dir = strtok(path_copy, PATH_LIST_SEPARATOR_STR);
       while (dir != NULL) {
-        add_executables_from_dir(dir, text, text_len);
+        add_executables_from_dir(dir, text, text_len, 0);
         dir = strtok(NULL, PATH_LIST_SEPARATOR_STR);
       }
       free(path_copy);
