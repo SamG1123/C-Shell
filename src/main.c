@@ -72,8 +72,14 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
 
   struct dirent *entry;
   while ((entry = readdir(dirp)) != NULL) {
+    if (strncmp(entry->d_name, ".", 1) == 0 || strncmp(entry->d_name, "..", 2) == 0) {
+      continue;
+    }
     if (strncmp(entry->d_name, prefix, prefix_len) != 0) {
       continue;
+    }
+    if (entry->d_name[0] == '.' && prefix[0] != '.') {
+    continue;
     }
 
     char full[MAX_PATH_LEN];
