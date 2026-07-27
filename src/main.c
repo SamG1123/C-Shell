@@ -123,6 +123,15 @@ void build_completion_list(const char *text) {
     }
   }
 
+  // Add file completions from current directory
+  add_executables_from_dir(".", text, text_len);
+
+  for (int i = 0; i < completion_count; i++) {
+    if (strcmp(completion_list[i], text) == 0) {
+      return;
+    }
+  }
+
   // Add matching executables from PATH
   if (current_path_env != NULL) {
     char *path_copy = strdup(current_path_env);
