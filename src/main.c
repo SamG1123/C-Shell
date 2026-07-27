@@ -91,7 +91,7 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
       completion_list = realloc(completion_list, (completion_count + 10) * sizeof(char *));
     }
     
-    char *full[MAX_PATH_LEN];
+    char full[MAX_PATH_LEN];
     snprintf(full, sizeof(full), "%s/%s", dir, entry->d_name);
 
     completion_list[completion_count] = strdup(full);
@@ -119,16 +119,18 @@ void build_completion_list(const char *text) {
       if (len == 0) {
         strcpy(directory,"/");
       }
-
-      strncpy(directory, text, len);
-      directory[len] = '\0';
+      else {
+        strncpy(directory, text, len);
+        directory[len] = '\0';
+      }
+      
       strcpy(prefix, slash + 1);
     }
-    else {
+  }
+  else {
       strcpy(directory, ".");
       strcpy(prefix, text);
     }
-  }
 
   // Free old list
   for (int i = 0; i < completion_count; i++) {
