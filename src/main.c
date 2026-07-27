@@ -76,10 +76,11 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
       continue;
     }
 
-
+    char full[MAX_PATH_LEN];
+    snprintf(full, sizeof(full), "%s/%s", dir, entry->d_name);
     int found = 0;
     for (int i = 0; i < completion_count; i++) {
-      if (strcmp(completion_list[i], entry->d_name) == 0) {
+      if (strcmp(completion_list[i], full) == 0) {
         found = 1;
         break;
       }
@@ -92,7 +93,11 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
     }
     
     char full[MAX_PATH_LEN];
-    snprintf(full, sizeof(full), "%s/%s", dir, entry->d_name);
+    if (strcmp(dir, ".") == 0) {
+      snprintf(full, sizeof(full), "%s", entry->d_name);
+    } else {
+      snprintf(full, sizeof(full), "%s/%s", dir, entry->d_name);
+    }
 
     completion_list[completion_count] = strdup(full);
     if (completion_list[completion_count] != NULL) {
@@ -194,6 +199,7 @@ char *autocomplete(const char *text, int state) {
 
 char **autocomplete_setup(const char *text, int start, int end) {
   rl_attempted_completion_over = 1;
+  rl_filename_completion_desired = 1;
   return rl_completion_matches(text, autocomplete);
 }
 
