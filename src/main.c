@@ -57,6 +57,7 @@ void restore_fd(int fd, int saved) {
 #endif
 }
 
+// Function to check if a command is a built-in command
 int is_builtin_cmd(const char *cmd) {
   return strcmp(cmd, "echo") == 0 || strcmp(cmd, "type") == 0 ||
          strcmp(cmd, "pwd") == 0 || strcmp(cmd, "cd") == 0 || 
@@ -64,6 +65,7 @@ int is_builtin_cmd(const char *cmd) {
 }
 
 
+// Function to add a command to the history
 void add_executables_from_dir(const char *dir, const char *prefix, int prefix_len) {
   DIR *dirp = opendir(dir);
   if (dirp == NULL) return;
@@ -88,8 +90,11 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
     if (completion_count % 10 == 0 && completion_count > 0) {
       completion_list = realloc(completion_list, (completion_count + 10) * sizeof(char *));
     }
+    
+    char *full[MAX_PATH_LEN];
+    snprintf(full, sizeof(full), "%s/%s", dir, entry->d_name);
 
-    completion_list[completion_count] = strdup(entry->d_name);
+    completion_list[completion_count] = strdup(full);
     if (completion_list[completion_count] != NULL) {
       completion_count++;
     }
@@ -100,6 +105,30 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
 
 void build_completion_list(const char *text) {
   int text_len = strlen(text);
+  char *slash = strrchr(text, '/');
+  char directory[MAX_PATH_LEN];
+  char prefix[MAX_PATH_LEN];
+
+  directory[0] = '\0';
+  prefix[0] = '\0';
+
+  if (slash != NULL) {
+    if (slash) {
+      size_t len = slash - text;
+
+      if (len == 0) {
+        strcpy(directory,"/");
+      }
+
+      strncpy(directory, text, len);
+      directory[len] = '\0';
+      strcpy(prefix, slash + 1);
+    }
+    else {
+      strcpy(directory, ".");
+      strcpy(prefix, text);
+    }
+  }
 
   // Free old list
   for (int i = 0; i < completion_count; i++) {
@@ -124,7 +153,7 @@ void build_completion_list(const char *text) {
   }
 
   // Add file completions from current directory
-  add_executables_from_dir(".", text, text_len);
+  add_executables_from_dir(directory, prefix, strlen(prefix));
 
   for (int i = 0; i < completion_count; i++) {
     if (strcmp(completion_list[i], text) == 0) {
