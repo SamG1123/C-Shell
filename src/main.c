@@ -77,7 +77,12 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
     }
 
     char full[MAX_PATH_LEN];
-    snprintf(full, sizeof(full), "%s/%s", dir, entry->d_name);
+    if (strcmp(dir, ".") == 0) {
+      snprintf(full, sizeof(full), "%s", entry->d_name);
+    } else {
+      snprintf(full, sizeof(full), "%s/%s", dir, entry->d_name);
+    }
+
     int found = 0;
     for (int i = 0; i < completion_count; i++) {
       if (strcmp(completion_list[i], full) == 0) {
@@ -90,14 +95,7 @@ void add_executables_from_dir(const char *dir, const char *prefix, int prefix_le
 
     if (completion_count % 10 == 0 && completion_count > 0) {
       completion_list = realloc(completion_list, (completion_count + 10) * sizeof(char *));
-    }
-    
-    char full[MAX_PATH_LEN];
-    if (strcmp(dir, ".") == 0) {
-      snprintf(full, sizeof(full), "%s", entry->d_name);
-    } else {
-      snprintf(full, sizeof(full), "%s/%s", dir, entry->d_name);
-    }
+    } 
 
     completion_list[completion_count] = strdup(full);
     if (completion_list[completion_count] != NULL) {
